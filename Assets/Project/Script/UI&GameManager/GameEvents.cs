@@ -1,60 +1,49 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Hub centrale degli eventi del gioco - MonoBehaviour SENZA Singleton.
-/// Non ha istanza statica, viene trovato tramite FindObjectOfType.
-/// 
-/// VANTAGGI:
-/// ✓ Non è un Singleton - meno accoppiamento
-/// ✓ Può essere distrutto e ricreato senza problemi
-/// ✓ Testabile: puoi creare istanze fake nei test
-/// ✓ Puoi avere più istanze se necessario (anche se non lo consigli)
-/// 
-/// COME USARE:
-/// - Gli script trovano questa istanza automaticamente tramite FindObjectOfType
-/// - Se non esiste, ricevono un warning ma il gioco continua
-/// 
-/// SETUP:
-/// 1. Crea un GameObject vuoto chiamato "_EventManager" nella scena
-/// 2. Aggiungi questo script al GameObject
-/// 3. Non serve assegnare riferimenti: script trovano automaticamente
-/// </summary>
 public class GameEvents : MonoBehaviour
 {
     // ════════════════════════════════════════════════════════════════
     // EVENTI PUBBLICI - Chiunque può sottoscrivere
     // ════════════════════════════════════════════════════════════════
 
-    /// <summary>
+    // L'istanza statica — unica per tutta la durata del gioco
+    public static GameEvents Instance { get; private set; }
+
     /// Pubblicato quando il player raccoglie una moneta.
     /// I parametri sono: (amount, timeBonus, isSpecial)
-    /// </summary>
     public event Action<int, float, bool> OnCoinCollected;
 
-    /// <summary>
     /// Pubblicato quando la partita termina (vittoria o sconfitta).
     /// Il parametro è: (hasWon)
-    /// </summary>
     public event Action<bool> OnGameOver;
 
-    /// <summary>
     /// Pubblicato ogni volta che il timer cambia.
     /// Il parametro è: (timeRemaining)
-    /// </summary>
     public event Action<float> OnTimeChanged;
 
-    /// <summary>
     /// Pubblicato quando il contatore di monete cambia.
     /// Il parametro è: (currentCoins, requiredCoins)
-    /// </summary>
     public event Action<int, int> OnCoinCountChanged;
 
-    /// <summary>
-    /// Pubblicato quando il player ha abbastanza monete per vincere.
-    /// </summary>
+    /// Pubblicato quando il player ha abbastanza monete per vincere
     public event Action OnVictoryConditionMet;
 
+    // ════════════════════════════════════════════════════════════════
+    // METODI MonoBehaviour
+    // ════════════════════════════════════════════════════════════════
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     // ════════════════════════════════════════════════════════════════
     // METODI PUBBLICI - Per pubblicare gli eventi
@@ -88,4 +77,33 @@ public class GameEvents : MonoBehaviour
         Debug.Log("[GameEvents] Victory Condition Met!");
         OnVictoryConditionMet?.Invoke();
     }
+
+    public void ResetEvents()
+    {
+        OnCoinCollected = null;
+        OnGameOver = null;
+        OnTimeChanged = null;
+        OnCoinCountChanged = null;
+        OnVictoryConditionMet = null;
+
+        Debug.Log("[GameEvents] All envents reset");
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ResetEvents();
+    }
 }
+
+
+

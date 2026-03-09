@@ -37,7 +37,6 @@ public class TurretBullet : MonoBehaviour
     /// <summary>
     /// Logica pura: Calcola il vettore di movimento per questo frame.
     /// Non modifica stato, non dipende da nient'altro.
-    /// ✅ TESTABILE: Puoi passare speed e deltaTime arbitrari
     /// </summary>
     private Vector3 CalculateMovement(float speed, float deltaTime)
     {

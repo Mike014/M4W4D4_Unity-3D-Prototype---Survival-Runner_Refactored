@@ -1,279 +1,354 @@
-# Unity 3D Prototype - Survival Runner
+# Unity 3D Prototype — Survival Runner
 
-Questo progetto è un prototipo funzionale di un gioco 3D survival/runner, sviluppato utilizzando Primitive di Unity (Cubi, Sfere, Capsule) per testare le meccaniche di gameplay pure senza distrazioni grafiche.
-
-Lo scopo del gioco è sopravvivere a un percorso a ostacoli, raccogliere monete per guadagnare tempo e punteggio, evitando trappole e torrette.
-
-## Stato del Progetto
-* Stato: Prototipo Funzionante (Alpha)
-* Grafica: Placeholder (Primitive)
-* Engine: Unity 3D
-* **Architettura: Event System (refactored da Singleton)**
+Un prototipo di gioco 3D in Unity in cui il giocatore deve raccogliere un numero di monete entro un limite di tempo, evitando ostacoli e proiettili nemici. Il progetto adotta un'architettura **event-driven pura** (senza Singleton), con logica di gioco separata per favorire la testabilità.
 
 ---
 
-## 🔄 Refactoring: Da Singleton a Event System
+## Gameplay
 
-### Il Problema Originale (Singleton)
+- **Obiettivo:** raccogliere le monete richieste (default: 5) prima che il timer scada.
+- **Sconfitta:** il timer raggiunge 0 oppure il player perde tutta la salute.
+- **Vittoria:** il player raccoglie tutte le monete necessarie.
+- Le **monete speciali** aggiungono secondi al timer.
+- Le **torrette** tracciano e sparano al player quando è nel loro raggio d'azione.
+- Gli **ostacoli** infliggono danno e spingono il player indietro (recoil).
 
-L'architettura iniziale utilizzava il **Singleton Pattern** nel `GameManager`:
+---
 
-```csharp
-// ❌ PRIMA: GameManager Singleton
-public class GameManager : MonoBehaviour
-{
-    public static GameManager Instance;  // ← Accoppiamento forte
-    
-    public void AddCoin(int amount, float timeBonus, bool isSpecial) { ... }
-    public void GameOver(bool hasWon) { ... }
-}
-
-// Coin e PlayerHealth dipendevano direttamente:
-Coin.cs:           GameManager.Instance.AddCoin(...)
-PlayerHealth.cs:   GameManager.Instance.GameOver(...)
-```
-
-**Problemi identificati:**
-* ❌ **Accoppiamento diretto:** Coin e PlayerHealth conoscevano GameManager
-* ❌ **Difficile da testare:** Singleton statico complica i test unitari
-* ❌ **Non scalabile:** Aggiungere feature nuove (es: combo system) richiedeva di toccare GameManager
-* ❌ **Dipendenze nascoste:** Difficile vedere quali script dipendevano da quale
-
-### La Soluzione: Event System (Event-Driven Architecture)
-
-Abbiamo refactorizzato l'architettura usando un **hub centrale basato su C# Events**, senza Singleton:
-
-```csharp
-// ✅ DOPO: GameEvents (MonoBehaviour senza Singleton)
-public class GameEvents : MonoBehaviour
-{
-    public event Action<int, float, bool> OnCoinCollected;  // ← Evento pubblico
-    public event Action<bool> OnGameOver;
-    public event Action<float> OnTimeChanged;
-    public event Action<int, int> OnCoinCountChanged;
-    
-    public void PublishCoinCollected(int amount, float timeBonus, bool isSpecial)
-    {
-        OnCoinCollected?.Invoke(amount, timeBonus, isSpecial);
-    }
-}
-```
-
-### Nuovo Flusso di Comunicazione
+## Struttura del Progetto
 
 ```
-┌──────────┐
-│   Coin   │  Raccolta
-└────┬─────┘
-     │
-     ↓ GameEvents.PublishCoinCollected()
-     │
-┌────────────────────────────────────┐
-│      GameEvents (Hub Centrale)     │
-│      OnCoinCollected ✨            │
-└────┬──────────────────────┬────────┘
-     │ ascolta              │ ascolta
-     ↓                      ↓
-┌─────────────────┐    ┌──────────────┐
-│  GameManager    │    │ ComboSystem* │
-│ HandleCoin()    │    │ (future)     │
-│ Aggiorna stato  │    │              │
-└────────┬────────┘    └──────────────┘
-         │
-         ↓ PublishCoinCountChanged()
-    ┌─────────┐
-    │   UI    │ Ascolta e aggiorna display
-    └─────────┘
-
-* Facilissimo da aggiungere senza toccare GameManager
+Assets/
+├── Project/
+│   └── Script/
+│       ├── Debug/
+│       │   ├── CameraDebugVisualization.cs
+│       │   └── HealthTester.cs
+│       ├── Gameplay/
+│       │   ├── Camera/
+│       │   │   └── CameraOrbit.cs
+│       │   ├── Enemy/Turret/
+│       │   │   ├── TurretController.cs
+│       │   │   └── TurretBullet.cs
+│       │   ├── Coin.cs
+│       │   └── Door.cs
+│       ├── Player/
+│       │   ├── PlayerController.cs
+│       │   └── PlayerHealth.cs
+│       └── UI&GameManager/
+│           ├── GameEvents.cs
+│           ├── GameManager.cs
+│           ├── HealthBar.cs
+│           └── MenuNavigation.cs
+└── Tests/
+    ├── CameraOrbitTests.cs
+    ├── GameManagerTests.cs
+    ├── PlayerControllerTests.cs
+    └── TurretControllerTests.cs
 ```
 
 ---
 
-## Vantaggi del Refactoring
+## Architettura
 
-| Aspetto | Singleton ❌ | Event System ✅ |
-|---------|----------|----------|
-| **Accoppiamento** | Alto (dipendenze dirette) | Basso (dipendenze zero) |
-| **Aggiungere feature** | Modificare GameManager | Aggiungere listener senza toccare nulla |
-| **Testabilità** | Difficile (Singleton statico) | Facile (FindObjectOfType) |
-| **Scalabilità** | Scarsa (non scala bene) | Ottima (event-driven) |
-| **Numero di listener** | 1 (sempre GameManager) | Illimitati (chiunque voglia ascoltare) |
+Il progetto usa un sistema **event-driven** centralizzato tramite `GameEvents`.
 
-### Esempio: Aggiungere ComboSystem
+- Nessun Singleton: tutti gli script trovano `GameEvents` tramite `FindObjectOfType`.
+- La comunicazione avviene tramite eventi C# (`Action<T>`), non tramite riferimenti diretti.
+- La logica pura è separata dalle dipendenze Unity per consentire il testing con NUnit.
 
-**Con Singleton:**
-```csharp
-// Devi modificare GameManager.cs
-public void AddCoin(...) {
-    // ... codice nuovo di combo ...
-    _comboCount++;
-}
+```
+Coin ──────────► GameEvents.OnCoinCollected ──────────► GameManager
+PlayerHealth ──► GameEvents.OnGameOver ───────────────► GameManager
+GameManager ───► GameEvents.PublishGameOver
+               ► GameEvents.PublishCoinCountChanged
+               ► GameEvents.PublishTimeChanged
+               ► GameEvents.PublishVictoryConditionMet
 ```
 
-**Con Event System:**
-```csharp
-// Crei ComboSystem.cs, GameManager rimane invariato!
-public class ComboSystem : MonoBehaviour
-{
-    void Start()
-    {
-        FindObjectOfType<GameEvents>().OnCoinCollected += HandleCombo;
-    }
-    
-    private void HandleCombo(int amount, float timeBonus, bool isSpecial)
-    {
-        _comboCount++;
-        Debug.Log($"COMBO x{_comboCount}!");
-    }
-}
-```
-
-**Risultato:** Zero modifiche al codice esistente. ✅ **Open/Closed Principle**
+**Setup scena:** creare un GameObject vuoto chiamato `_EventManager` e aggiungere il componente `GameEvents`.
 
 ---
 
-## Implementazione Tecnica
+## Script
 
-### File Modificati
+### Player
 
-1. **GameEvents_NoSingleton.cs** (NUOVO)
-   - Hub centrale degli eventi
-   - Niente Singleton, niente stato
-   - Trovato tramite `FindObjectOfType<GameEvents>()`
+#### `PlayerController.cs`
+Gestisce il movimento, il salto e le collisioni fisiche del player.
 
-2. **GameManager_NoSingleton.cs** (REFACTORED)
-   - ❌ Rimosso: `public static GameManager Instance`
-   - ✅ Aggiunto: `OnEnable()/OnDisable()` per subscribe/unsubscribe agli eventi
-   - ✅ Aggiunto: `HandleCoinCollected()` e `HandleGameOver()` come event handlers
-   - Logica pura rimane identica e testabile
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_moveSpeed` | float | 7 | Velocità di movimento (unità/s) |
+| `_jumpForce` | float | 6 | Forza del salto (impulso) |
+| `_groundCheck` | Transform | — | Punto di controllo contatto col suolo |
+| `_groundCheckRadius` | float | 0.2 | Raggio della sfera per il ground check |
+| `_groundLayer` | LayerMask | — | Layer considerati "terreno" |
+| `_pushForce` | float | 2 | Forza di spinta alla collisione |
+| `_recoilDuration` | float | 0.65 | Durata in secondi della paralisi post-collisione |
+| `_obstacleDamage` | int | 7 | Danno ricevuto toccando un ostacolo |
 
-3. **Coin_NoSingleton.cs** (REFACTORED)
-   - ❌ Rimosso: `GameManager.Instance.AddCoin()`
-   - ✅ Aggiunto: `GameEvents.PublishCoinCollected()`
-   - Coin non conosce più GameManager
-
-4. **PlayerHealth_NoSingleton.cs** (REFACTORED)
-   - ❌ Rimosso: `GameManager.Instance.GameOver()`
-   - ✅ Aggiunto: `GameEvents.PublishGameOver()`
-   - PlayerHealth non conosce più GameManager
-
-5. **GameManagerTests_Updated.cs** (AGGIORNATO)
-   - Setup modificato: crea GameEvents prima di GameManager
-   - Tutti i test rimangono identici (logica pura invariata)
-   - Solo 5 linee di codice cambiate nel setup
+**Comportamento:**
+- Il movimento è relativo alla direzione della camera (non agli assi del mondo).
+- Il salto funziona solo quando il player è a terra (ground check con `Physics.CheckSphere`).
+- Se il player tocca un oggetto con tag `Boundaries` → spinta senza danno.
+- Se tocca un oggetto con tag `Obstacle` → spinta + danno + recoil (blocco input).
 
 ---
 
-## FunzionalitÀ Implementate
+#### `PlayerHealth.cs`
+Gestisce il sistema di salute del player.
 
-### Player Controller & Fisica
-* Movimento Fisico: Implementato tramite Rigidbody in FixedUpdate per garantire interazioni fisiche solide.
-* Salto: Logica di GroundCheck tramite Physics.CheckSphere per prevenire salti infiniti.
-* Recoil System: Quando il giocatore colpisce un muro o un ostacolo, perde temporaneamente il controllo e viene respinto indietro.
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_maxHealth` | int | 100 | Salute massima |
+| `_delayBeforeGameOver` | float | 0.5 | Secondi di attesa prima di pubblicare il game over |
 
-### Interazione Ambientale
-* Boundaries (Muri di Confine): I muri perimetrali possiedono una logica di "Pushback". Se il giocatore tenta di uscire dall'area:
-    * Viene applicata una forza opposta (AddForce).
-    * Non viene inflitto danno (solo spinta fisica).
-* Obstacles (Ostacoli):
-    * Possiedono Basic Animations (es. movimento o rotazione semplice).
-    * Infliggono danno al contatto, riducendo la salute del giocatore.
+**Metodi pubblici:**
+- `TakeDamage(int damage)` — riduce la salute, pubblica `OnDamageTaken`. Se scende a 0, pubblica `OnDeath` e avvia la coroutine di game over.
+- `Heal(int amount)` — aumenta la salute entro `_maxHealth`, pubblica `OnHealed`.
+- `SetMaxHealth(int newMax, bool healToFull)` — modifica la salute massima.
 
-### Game Loop & Manager (Event-Driven)
-* **GameEvents:** Hub centrale basato su C# Events (no Singleton)
-* **GameManager:** Ascolta gli eventi di Coin e PlayerHealth, aggiorna lo stato interno
-* **Sistema Monete:**
-    * Le monete pubblicano un evento quando raccolte
-    * GameManager ascolta e aggiorna il contatore
-    * UI ascolta e aggiorna il display
-* **Timer System:** Countdown progressivo. Se arriva a 0, scatta il Game Over (Time.timeScale = 0)
-
-### AI (Torrette)
-* Sistema di puntamento automatico verso il player (LookAt).
-* Logica di sparo a intervalli regolari con proiettili fisici.
+**UnityEvent esposti:**
+- `OnHealthChanged(int current, int max)`
+- `OnDeath`
+- `OnDamageTaken`
+- `OnHealed`
 
 ---
 
-## Work In Progress (Da Implementare)
+### Gameplay
 
-Attualmente il core loop è completo, ma mancano alcuni elementi di rifinitura finale:
+#### `Coin.cs`
+Moneta collezionabile. Quando il player la tocca, pubblica `OnCoinCollected` tramite `GameEvents` e si autodistrugge.
 
-* Exit Door (Uscita): La logica di sblocco (RequiredCoins) è presente nel codice, ma l'oggetto fisico "Porta" e la sua interazione non sono ancora stati posizionati nella scena.
-* Animazioni Avanzate: Le animazioni attuali sono procedurali o base. Verranno aggiunti Animator Controller completi per la porta e il player.
-* Modelli 3D: Sostituzione delle primitive con asset grafici definitivi.
-
----
-
-## Architettura Tecnica
-
-Il progetto segue principi di programmazione modulare e best practices professionali:
-
-* **Event-Driven Architecture:** Utilizzo di C# Events per decoupling tra script
-* **Logica Pura Separata:** Metodi testabili senza dipendenze esterne (IsTimeExpired, ShouldPlayerWin, ConvertTimeToMinutesSeconds, etc.)
-* **UnityEvents:** Il sistema PlayerHealth utilizza eventi per notificare danni e morte, disaccoppiando la logica della salute dalla UI
-* **UI Legacy:** Implementazione di un'interfaccia utente funzionale per Timer e Contatore Monete
-* **FindObjectOfType Pattern:** Ricerca runtime di componenti senza Singleton statico
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_scoreValue` | int | 1 | Valore in monete |
+| `_timeBonus` | float | 5 | Secondi bonus aggiunti al timer (solo se speciale) |
+| `_isSpecial` | bool | false | Se true, aggiunge `_timeBonus` al timer |
 
 ---
 
-## Comandi
+#### `Door.cs`
+Porta che si apre con un'animazione Lerp quando viene chiamato `Open()`.
 
-| Tasto | Azione |
-| :--- | :--- |
-| W, A, S, D | Movimento |
-| Spazio | Salto |
-| Mouse | Rotazione Telecamera (Orbit) |
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_openOffset` | Vector3 | (0, 5, 0) | Spostamento della porta quando si apre |
+| `_openSpeed` | float | 2 | Velocità di apertura (fattore di Lerp) |
 
----
+**Metodo pubblico:**
+- `Open()` — abilita il movimento verso la posizione aperta.
 
-## Testing
-
-I test unitari rimangono **99% identici** perché testano **logica pura** che non dipende da Singleton o Event System:
-
-```csharp
-[SetUp]
-public void Setup()
-{
-    // Crea GameEvents PRIMA di GameManager
-    _eventManagerObj = new GameObject("_EventManager");
-    _eventManagerObj.AddComponent<GameEvents>();
-    
-    _gameManagerObj = new GameObject("GameManager");
-    _gameManager = _gameManagerObj.AddComponent<GameManager>();
-}
-
-// Tutti i test rimangono identici: testano logica pura
-[Test]
-public void ShouldPlayerWin_ReturnsTrue_WhenCoinsEqualRequired()
-{
-    bool result = _gameManager.ShouldPlayerWin(5, 5);
-    Assert.IsTrue(result);
-}
-```
+> Nota: `GameManager` tiene un riferimento alla `Door` ma attualmente non chiama `Open()` automaticamente; il collegamento è predisposto per estensioni future.
 
 ---
 
-## Principi Architetturali Applicati
+#### `TurretController.cs`
+Torretta nemica che traccia il player e spara proiettili quando è nel suo raggio.
 
-✅ **SOLID Principles:**
-- **S**ingle Responsibility: Ogni script ha una responsabilità
-- **O**pen/Closed: Aggiungere feature senza modificare codice esistente
-- **L**iskov Substitution: Events permettono intercambiabilità
-- **I**nterface Segregation: Piccoli listener specializzati
-- **D**ependency Inversion: Dipendenza da astrazioni (events) non da implementazioni (Singleton)
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_partToRotate` | Transform | — | Parte della torretta che ruota (es. la testa) |
+| `_firePoint` | Transform | — | Punto di spawn dei proiettili |
+| `_bulletPrefab` | GameObject | — | Prefab del proiettile |
+| `_rotationSpeed` | float | 5 | Velocità di rotazione verso il target (Lerp) |
+| `_modelCorrection` | float | 0 | Correzione angolare del modello 3D (-180 / +180) |
+| `_fireRate` | float | 1 | Colpi al secondo |
 
-✅ **Clean Code:**
-- Logica pura separata da side effects
-- Nomi descrittivi e self-documenting
-- Commenti che spiegano il "perché" non il "cosa"
-
-✅ **Game Development Best Practices:**
-- Event-driven communication per game systems
-- Decoupled architecture per scalabilità
-- Testability embedded fin dall'inizio
+**Comportamento:**
+- Rileva il player tramite un `SphereCollider` impostato come trigger.
+- Quando il player entra nel raggio, la torretta inizia a ruotare e sparare.
+- Il raggio d'attacco è visualizzato nell'Editor come sfera rossa (Gizmo).
+- La logica pura (`CanShootNow`, `ResetFireCountdown`, `CalculateTargetRotation`) è separata per il testing.
 
 ---
 
-**Progetto sviluppato a scopo didattico per Master in Game Development.**
+#### `TurretBullet.cs`
+Proiettile sparato dalla torretta. Si muove in linea retta, infligge danno al player e si autodistrugge.
 
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_speed` | float | 20 | Velocità (unità/s) |
+| `_damage` | int | 10 | Danno inflitto al player |
+| `_lifeTime` | float | 1.5 | Tempo di vita massimo in secondi |
+
+**Collisioni:**
+- Ignora i collider con `isTrigger = true`.
+- Ignora oggetti con tag `Turret` e `Bullet` (non si blocca da soli).
+- Infligge danno e si distrugge colpendo il player (`PlayerHealth`).
+- Si distrugge colpendo qualsiasi altra superficie solida.
+
+---
+
+#### `CameraOrbit.cs`
+Camera in terza persona che orbita attorno al player controllata dal mouse.
+
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_target` | Transform | — | Transform del player |
+| `_mouseSensitivity` | float | 2 | Sensibilità del mouse |
+| `_distance` | float | 5 | Distanza desiderata dalla camera al player |
+| `_minVerticalAngle` | float | -20 | Limite inferiore angolo verticale |
+| `_maxVerticalAngle` | float | 70 | Limite superiore angolo verticale |
+| `_enableCollision` | bool | true | Abilita il raycast anti-muro |
+| `_collisionLayers` | LayerMask | — | Layer che bloccano la camera |
+| `_collisionPadding` | float | 0.2 | Spazio cuscinetto tra camera e muro |
+| `_positionSmoothTime` | float | 0.12 | Tempo di smorzamento del SmoothDamp |
+
+**Comportamento:**
+- Si aggiorna in `LateUpdate` per seguire il player dopo il suo movimento.
+- Usa `SmoothDamp` per un movimento fluido.
+- Il raycast dal player verso la camera riduce la distanza se c'è un ostacolo.
+- `ESC` sblocca il cursore.
+
+---
+
+### UI & GameManager
+
+#### `GameEvents.cs`
+Hub centrale degli eventi del gioco. Va aggiunto a un GameObject nella scena (`_EventManager`).
+
+**Eventi C# disponibili:**
+
+| Evento | Firma | Descrizione |
+|---|---|---|
+| `OnCoinCollected` | `(int amount, float timeBonus, bool isSpecial)` | Moneta raccolta |
+| `OnGameOver` | `(bool hasWon)` | Fine partita |
+| `OnTimeChanged` | `(float timeRemaining)` | Timer aggiornato |
+| `OnCoinCountChanged` | `(int current, int required)` | Contatore monete aggiornato |
+| `OnVictoryConditionMet` | `()` | Condizione di vittoria raggiunta |
+
+**Metodi `Publish*`:** wrappano l'invocazione degli eventi con log di debug incluso.
+
+---
+
+#### `GameManager.cs`
+Gestisce lo stato globale: timer, monete, vittoria/sconfitta e navigazione tra scene.
+
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_timerText` | Text | — | UI Text del timer |
+| `_coinText` | Text | — | UI Text del contatore monete |
+| `_victoryImage` | Image | — | Immagine di vittoria |
+| `_defeatImage` | Image | — | Immagine di sconfitta |
+| `_backToMenuButtonVictory` | Button | — | Bottone "Menu" nella schermata vittoria |
+| `_restartButtonDefeat` | Button | — | Bottone "Riprova" nella schermata sconfitta |
+| `_backToMenuButtonDefeat` | Button | — | Bottone "Menu" nella schermata sconfitta |
+| `_timeRemaining` | float | 120 | Tempo iniziale in secondi |
+| `_exitDoor` | Door | — | Riferimento alla porta di uscita |
+| `RequiredCoins` | int | 5 | Monete necessarie per vincere |
+
+**Metodi pubblici (testabili):**
+
+| Metodo | Descrizione |
+|---|---|
+| `IsTimeExpired(float)` | Ritorna `true` se il tempo è ≤ 0 |
+| `ShouldPlayerWin(int, int)` | Ritorna `true` se monete ≥ richieste |
+| `ConvertTimeToMinutesSeconds(float)` | Converte secondi in `[minuti, secondi]` |
+| `FormatTimeToString(int, int)` | Formatta come `"MM:SS"` |
+| `ShouldTimerBeRed(float)` | Ritorna `true` se tempo ≤ 15 s |
+| `CalculateNewCoinCount(int, int)` | Somma corrente + aggiunta |
+| `CalculateNewTimeRemaining(float, float, bool)` | Aggiunge bonus solo se moneta speciale |
+
+---
+
+#### `HealthBar.cs`
+Barra di salute UI che si aggiorna automaticamente ascoltando `PlayerHealth.OnHealthChanged`.
+
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_playerHealth` | PlayerHealth | — | Riferimento al componente salute del player |
+| `_fillImage` | Image | — | Immagine UI di tipo "Filled" |
+| `_healthText` | Text | — | Testo opzionale (es. "75 / 100") |
+| `_animateChanges` | bool | true | Abilita animazione smooth del riempimento |
+| `_animationSpeed` | float | 5 | Velocità dell'animazione (fattore Lerp) |
+
+---
+
+#### `MenuNavigation.cs`
+Gestisce i bottoni del menu principale.
+
+| Campo Inspector | Tipo | Descrizione |
+|---|---|---|
+| `_newGameButton` | Button | Avvia il gioco (carica scena indice 1) |
+| `_exitGameButton` | Button | Chiude l'applicazione |
+
+> `Application.Quit()` funziona solo nella build. Nell'Editor viene usato `EditorApplication.isPlaying = false`.
+
+---
+
+### Debug
+
+#### `CameraDebugVisualization.cs`
+Script di debug per visualizzare orientamento e posizione della camera principale.
+
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_forwardLineColor` | Color | Blu | Direzione forward della camera |
+| `_upLineColor` | Color | Verde | Direzione up della camera |
+| `_rightLineColor` | Color | Rosso | Direzione right della camera |
+| `_lineLength` | float | 10 | Lunghezza delle linee di debug |
+| `_drawDebugLines` | bool | true | Disegna le linee ogni frame |
+| `_logToConsole` | bool | true | Stampa info camera all'avvio |
+
+**Metodi pubblici:**
+- `RefreshDebugInfo()` — ristampa le informazioni della camera in console.
+- `DrawDebugPoint(Vector3, Color, float)` — disegna un punto di debug nello spazio.
+
+> Da disabilitare nella build finale.
+
+---
+
+#### `HealthTester.cs`
+Script di test per infliggere danno o curare il player tramite click del mouse.
+
+| Campo Inspector | Tipo | Default | Descrizione |
+|---|---|---|---|
+| `_playerHealth` | PlayerHealth | — | Riferimento al player |
+| `_damageAmount` | int | 10 | Danno inflitto con click sinistro |
+| `_healAmount` | int | 10 | Cura applicata con click destro |
+
+> Solo per sviluppo. Da rimuovere nella build finale.
+
+---
+
+## Test
+
+I test si trovano in `Assets/Tests/` e usano **NUnit** tramite Unity Test Runner. Le dipendenze Unity (Transform, Rigidbody) vengono iniettate via **Reflection** per testare metodi privati.
+
+| File | Classi testate | Test |
+|---|---|---|
+| `PlayerControllerTests.cs` | `PlayerController` | Rigidbody, salto, recoil, movimento |
+| `GameManagerTests.cs` | `GameManager` | Timer, monete, condizioni vittoria, formattazione |
+| `TurretControllerTests.cs` | `TurretController`, `TurretBullet` | Rotazione, rateo di fuoco, collisioni proiettile |
+| `CameraOrbitTests.cs` | `CameraOrbit` | Angoli orizzontale/verticale, clamping |
+
+---
+
+## Setup
+
+### Tag richiesti
+I seguenti tag devono essere configurati in **Edit > Project Settings > Tags and Layers**:
+
+| Tag | Usato da |
+|---|---|
+| `Player` | TurretController, TurretBullet, Coin |
+| `Boundaries` | PlayerController |
+| `Obstacle` | PlayerController |
+| `Turret` | TurretBullet |
+| `Bullet` | TurretBullet |
+| `MainCamera` | CameraDebugVisualization |
+
+### Build Settings
+| Indice | Scena |
+|---|---|
+| 0 | Menu principale |
+| 1 | Scena di gioco |
+
+### Scena di gioco — componenti richiesti
+- Un GameObject `_EventManager` con il componente `GameEvents`.
+- Un GameObject `GameManager` con il componente `GameManager` e tutti i riferimenti UI assegnati.
+- Il player deve avere `PlayerController`, `PlayerHealth`, `Rigidbody` e un figlio `GroundCheck`.
+- La camera deve avere `CameraOrbit` con il target assegnato al player.

@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-/// <summary>
 /// Gestisce lo stato globale del gioco: timer, monete, vittoria/sconfitta.
 /// 
 /// ARCHITETTURA EVENT-DRIVEN PURA (no Singleton):
@@ -16,7 +15,6 @@ using UnityEngine.SceneManagement;
 /// ✓ GameEvents non è un Singleton
 /// ✓ Nessun accoppiamento statico
 /// ✓ Testabile: puoi creare istanze fake
-/// </summary>
 public class GameManager : MonoBehaviour
 {
     [Header("UI Settings")]
@@ -54,15 +52,8 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // ✅ TROVARE GameEvents senza Singleton
         // Cerchiamo il componente GameEvents nella scena
-        _gameEvents = FindObjectOfType<GameEvents>();
-        
-        if (_gameEvents == null)
-        {
-            Debug.LogError("[GameManager] GameEvents not found in scene! Create a GameObject with GameEvents component.");
-            return;
-        }
+        _gameEvents = GameEvents.Instance; 
 
         // Sottoscrivi agli eventi
         SubscribeToEvents();
@@ -353,6 +344,7 @@ public class GameManager : MonoBehaviour
 
     private void BackToMenu()
     {
+        _isGameOver = true;
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -362,6 +354,7 @@ public class GameManager : MonoBehaviour
 
     private void RestartGame()
     {
+        _isGameOver = true;
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;

@@ -37,11 +37,7 @@ public class PlayerHealth : MonoBehaviour
         OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
         
         // Trova GameEvents una volta all'inizio
-        _gameEvents = FindObjectOfType<GameEvents>();
-        if (_gameEvents == null)
-        {
-            Debug.LogError("[PLAYERHEALTH] GameEvents not found in scene!");
-        }
+        _gameEvents = GameEvents.Instance; 
     }
 
     public void TakeDamage(int damage)

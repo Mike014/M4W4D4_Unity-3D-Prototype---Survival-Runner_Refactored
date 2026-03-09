@@ -3563,6 +3563,7 @@ GameObject:
   - component: {fileID: 1654424022}
   - component: {fileID: 1654424023}
   - component: {fileID: 1654424024}
+  - component: {fileID: 1654424025}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -3597,13 +3598,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6aae708caf870c44ea360be3b002fc60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _timerText: {fileID: 202202761}
-  _coinText: {fileID: 773371035}
-  _victoryImage: {fileID: 2111770577}
-  _backToMenuButtonVictory: {fileID: 1360736190}
-  _defeatImage: {fileID: 695351119}
-  _restartButtonDefeat: {fileID: 1215371756}
-  _backToMenuButtonDefeat: {fileID: 1555038342}
   _timeRemaining: 75
   _exitDoor: {fileID: 0}
   RequiredCoins: 5
@@ -3619,6 +3613,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2161634269b862b4f9304b009bd4678e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1654424025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1654424021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae6a307b6a5cc774f96fa51608c1b70e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _timerText: {fileID: 202202761}
+  _coinText: {fileID: 773371035}
+  _victoryImage: {fileID: 2111770577}
+  _backToMenuButtonVictory: {fileID: 1555038342}
+  _defeatImage: {fileID: 695351119}
+  _restartButtonDefeat: {fileID: 1215371756}
+  _backToMenuButtonDefeat: {fileID: 1555038342}
 --- !u!1 &1715907889
 GameObject:
   m_ObjectHideFlags: 0

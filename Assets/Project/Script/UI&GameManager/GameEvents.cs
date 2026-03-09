@@ -11,6 +11,10 @@ public class GameEvents : MonoBehaviour
     // L'istanza statica — unica per tutta la durata del gioco
     public static GameEvents Instance { get; private set; }
 
+    // Eventi collegati a UIManager
+    public event Action OnBackToMenuRequested;
+    public event Action OnRestartRequested;
+
     /// Pubblicato quando il player raccoglie una moneta.
     /// I parametri sono: (amount, timeBonus, isSpecial)
     public event Action<int, float, bool> OnCoinCollected;
@@ -33,6 +37,7 @@ public class GameEvents : MonoBehaviour
     // ════════════════════════════════════════════════════════════════
     // METODI MonoBehaviour
     // ════════════════════════════════════════════════════════════════
+    
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -78,6 +83,18 @@ public class GameEvents : MonoBehaviour
         OnVictoryConditionMet?.Invoke();
     }
 
+    public void PublishBackToMenuRequested()
+    {
+        Debug.Log("[GameEvents] Back To Menu Requested");
+        OnBackToMenuRequested?.Invoke();
+    }
+
+    public void PublishRestartRequested()
+    {
+        Debug.Log("[GameEvents] Restart Requested");
+        OnRestartRequested?.Invoke();
+    }
+
     public void ResetEvents()
     {
         OnCoinCollected = null;
@@ -85,8 +102,10 @@ public class GameEvents : MonoBehaviour
         OnTimeChanged = null;
         OnCoinCountChanged = null;
         OnVictoryConditionMet = null;
+        OnBackToMenuRequested = null;
+        OnRestartRequested = null;
 
-        Debug.Log("[GameEvents] All envents reset");
+        Debug.Log("[GameEvents] All events reset");
     }
 
     private void OnEnable()

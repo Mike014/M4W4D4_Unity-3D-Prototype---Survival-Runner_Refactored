@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float _groundCheckRadius = 0.2f;
     // Layer mask che identifica quali layer sono considerati "terreno"
     [SerializeField] private LayerMask _groundLayer;
-    
+
     [Header("Interaction Settings")]
     // Forza della spinta quando colpisci un muro/ostacolo
     [SerializeField] private float _pushForce = 2f;
@@ -30,36 +30,41 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private int _obstacleDamage = 7;
 
     [Header("References")]
+    [SerializeField]private Camera _mainCamera;
+
     // Rigidbody del player - cachato per evitare GetComponent() ogni frame
     private Rigidbody _rb;
     // Reference al sistema di salute del player - cachato per performance
     private PlayerHealth _health;
     // Refactor
-    private Camera _mainCamera;
-
+    
     // Input manager - tracciamo gli input in Update(), li usiamo in FixedUpdate()
     private float _horizontalInput;
     private float _verticalInput;
     private bool _jumpInput;
-    
+
     // Stato fisico
     private bool _isGrounded;
     // Timer che conta i secondi rimasti del recoil (paralisi dopo collisione)
     private float _recoilTimer = 0f;
 
-    void Start()
+    private void Awake()
     {
         // Recupera il Rigidbody dello stesso GameObject per evitare GetComponent() ripetuti
         _rb = GetComponent<Rigidbody>();
         // Recupera il componente PlayerHealth dello stesso GameObject
         _health = GetComponent<PlayerHealth>();
+        if (_mainCamera == null)
+           _mainCamera = Camera.main;
+        
+    }
 
+    void Start()
+    {
         // Assicurati che il Rigidbody non ruoti (il player rimane sempre in piedi)
         // Importante: freezeRotation previene rotazioni indesiderate dalla fisica
-        if(_rb.freezeRotation != true)
-        {
-            _rb.freezeRotation = true;
-        }
+        // if (_rb.freezeRotation != true){}
+        _rb.freezeRotation = true;
     }
 
     void Update()
@@ -75,14 +80,14 @@ public class PlayerController : MonoBehaviour
         // GetAxis ritorna valori -1 / 0 / 1 (smooth) per movimento continuo
         _horizontalInput = Input.GetAxis("Horizontal");
         _verticalInput = Input.GetAxis("Vertical");
-        
+
         // GetButtonDown ritorna true solo nel frame in cui il bottone è premuto
         // Memorizza lo stato in _jumpInput per usarlo in FixedUpdate()
-        if(Input.GetButtonDown("Jump"))
+        if (Input.GetButtonDown("Jump"))
         {
             _jumpInput = true;
         }
-        
+
         // GROUND CHECK
         // CheckSphere crea una sfera invisibile in _groundCheck.position
         // Ritorna true se la sfera sovrappone qualcosa nel layer _groundLayer
@@ -108,14 +113,14 @@ public class PlayerController : MonoBehaviour
         if (_recoilTimer > 0) return;
 
         // Prendi la direzione forward e right della camera principale
-        Vector3 cameraForward = Camera.main.transform.forward;
-        Vector3 cameraRight = Camera.main.transform.right;
+        Vector3 cameraForward = _mainCamera.transform.forward;
+        Vector3 cameraRight = _mainCamera.transform.right;
 
         // Azzeramento della componente Y: il movimento è solo orizzontale (no salita/discesa)
         // Questo impedisce che il tilt della camera influenzi il movimento verticale
         cameraForward.y = 0;
         cameraRight.y = 0;
-        
+
         // Normalize: rende i vettori lunghezza 1, così la velocità è uniforme in tutte le direzioni
         // (diagonale = ortogonale, non diagonale = più veloce senza questo)
         cameraForward.Normalize();
@@ -125,7 +130,7 @@ public class PlayerController : MonoBehaviour
         // rispetto agli assi della camera
         Vector3 moveDirection = cameraRight * _horizontalInput + cameraForward * _verticalInput;
         moveDirection.Normalize();
-        
+
         // Applica la velocità al Rigidbody
         // Manteniamo la velocità Y inalterata (non alterare il salto/gravità)
         // Sostituiamo solo X e Z con il movimento desiderato
@@ -135,7 +140,7 @@ public class PlayerController : MonoBehaviour
             moveDirection.z * _moveSpeed
         );
     }
-    
+
     /// <summary>
     /// Gestisce il salto del player.
     /// Applica una forza verso l'alto solo se il player è a terra e ha premuto il tasto salto.
@@ -146,7 +151,7 @@ public class PlayerController : MonoBehaviour
         // Salta solo se:
         // 1. Il player ha premuto il tasto salto (_jumpInput == true)
         // 2. Il player è a terra (_isGrounded == true)
-        if(_jumpInput && _isGrounded)
+        if (_jumpInput && _isGrounded)
         {
             // AddForce con ForceMode.Impulse: applica una spinta istantanea
             // (ignora il deltaTime, è l'unico jump per questo input)

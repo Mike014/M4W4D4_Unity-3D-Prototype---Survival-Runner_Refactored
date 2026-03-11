@@ -361,6 +361,7 @@ MonoBehaviour:
   _pushForce: 0.2
   _recoilDuration: 0.19
   _obstacleDamage: 6
+  _mainCamera: {fileID: 963194227}
 --- !u!114 &101542021
 MonoBehaviour:
   m_ObjectHideFlags: 0

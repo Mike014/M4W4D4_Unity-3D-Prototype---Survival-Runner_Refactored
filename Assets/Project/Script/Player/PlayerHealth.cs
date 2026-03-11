@@ -1,26 +1,18 @@
 using UnityEngine;
-using UnityEngine.Events;
+using System;
 using System.Collections;
 
-/// <summary>
-/// Gestisce il sistema di salute del player.
-/// 
-/// ARCHITETTURA EVENT-DRIVEN PURA (no Singleton):
-/// - Trova GameEvents tramite FindObjectOfType
-/// - Pubblica l'evento quando il player muore
-/// - Non conosce GameManager
-/// </summary>
 public class PlayerHealth : MonoBehaviour
 {
     [Header("Health Settings")]
     [SerializeField] private int _maxHealth = 100;
     [SerializeField] private int _currentHealth;
 
-    [Header("Events")]
-    public UnityEvent<int, int> OnHealthChanged;
-    public UnityEvent OnDeath;
-    public UnityEvent OnDamageTaken;
-    public UnityEvent OnHealed;
+    // [Header("Events")]
+    public event Action<int, int> OnHealthChanged;
+    public event Action OnDeath;
+    public event Action OnDamageTaken;
+    public event Action OnHealed;
 
     [Header("Death Animation Settings")]
     [SerializeField] private float _delayBeforeGameOver = 0.5f;
@@ -30,14 +22,20 @@ public class PlayerHealth : MonoBehaviour
     public bool IsDead => _currentHealth <= 0;
 
     private GameEvents _gameEvents;
+    private PlayerController controller;
+
+    private void Awake()
+    {
+        // Trova GameEvents una volta all'inizio
+        _gameEvents = GameEvents.Instance;
+
+        controller = GetComponent<PlayerController>();
+    }
 
     void Start()
     {
         _currentHealth = _maxHealth;
         OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
-        
-        // Trova GameEvents una volta all'inizio
-        _gameEvents = GameEvents.Instance; 
     }
 
     public void TakeDamage(int damage)
@@ -92,7 +90,7 @@ public class PlayerHealth : MonoBehaviour
         Debug.Log("Player Died");
         OnDeath?.Invoke();
 
-        PlayerController controller = GetComponent<PlayerController>();
+
         if (controller != null)
         {
             controller.enabled = false;
@@ -105,7 +103,7 @@ public class PlayerHealth : MonoBehaviour
     {
         yield return new WaitForSeconds(_delayBeforeGameOver);
 
-        // ✅ Pubblica l'evento tramite GameEvents (trovato una volta in Start)
+        // Pubblica l'evento tramite GameEvents (trovato una volta in Start)
         if (_gameEvents != null)
         {
             _gameEvents.PublishGameOver(false);

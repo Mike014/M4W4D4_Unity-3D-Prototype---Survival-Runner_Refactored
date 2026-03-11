@@ -44,7 +44,7 @@ public class HealthBar : MonoBehaviour
             // AddListener registra questo script per ascoltare OnHealthChanged
             // Ogni volta che la salute cambia, UpdateHealthBar() sarà invocato automaticamente
             // Firma dell'evento: OnHealthChanged<int, int> (currentHealth, maxHealth)
-            _playerHealth.OnHealthChanged.AddListener(UpdateHealthBar);
+            // _playerHealth.OnHealthChanged.AddListener(UpdateHealthBar);
             
             // INIZIALIZZAZIONE
             // Aggiorna il display iniziale con la salute attuale
@@ -69,7 +69,7 @@ public class HealthBar : MonoBehaviour
         // Causando "trying to invoke a function on a destroyed object" error
         if (_playerHealth != null)
         {
-            _playerHealth.OnHealthChanged.RemoveListener(UpdateHealthBar);
+            // _playerHealth.OnHealthChanged.RemoveListener(UpdateHealthBar);
         }
     }
 

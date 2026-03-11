@@ -34,6 +34,8 @@ public class PlayerController : MonoBehaviour
     private Rigidbody _rb;
     // Reference al sistema di salute del player - cachato per performance
     private PlayerHealth _health;
+    // Refactor
+    private Camera _mainCamera;
 
     // Input manager - tracciamo gli input in Update(), li usiamo in FixedUpdate()
     private float _horizontalInput;

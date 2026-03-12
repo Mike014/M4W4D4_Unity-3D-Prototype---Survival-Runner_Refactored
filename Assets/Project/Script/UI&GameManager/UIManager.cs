@@ -21,7 +21,7 @@ public class UIManager : MonoBehaviour
     {
         // Cerchiamo il componente GameEvents && GameManager nella scena
         _gameEvents = GameEvents.Instance;
-
+        Debug.Log($"[UIManager] GameEvents is null: {_gameEvents == null}");
         Debug.Log($"[UIManager] Victory button interactable: {_backToMenuButtonVictory?.interactable}");
 
         SubscribeToEvents();

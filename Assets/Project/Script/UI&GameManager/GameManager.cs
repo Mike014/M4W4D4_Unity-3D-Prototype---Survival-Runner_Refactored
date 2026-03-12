@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
     {
         // Cerchiamo il componente GameEvents nella scena
         _gameEvents = GameEvents.Instance;
-
+        
         // Sottoscrivi agli eventi
         SubscribeToEvents();
 

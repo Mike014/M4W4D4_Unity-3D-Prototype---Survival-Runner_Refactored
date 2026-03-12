@@ -160,6 +160,7 @@ public class GameManager : MonoBehaviour
 
     private void PublishGameOverEvent(bool hasWon)
     {
+        // Debug.Log($"Has Won è : {hasWon}");
         if (_isGameOver) return;
         _isGameOver = true;
         _gameEvents.PublishGameOver(hasWon);

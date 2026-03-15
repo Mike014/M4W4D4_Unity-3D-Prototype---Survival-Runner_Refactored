@@ -1,13 +1,10 @@
 using UnityEngine;
 
-/// <summary>
 /// Rappresenta una moneta collezionabile nel gioco.
 /// 
 /// ARCHITETTURA EVENT-DRIVEN PURA (no Singleton):
-/// - Trova GameEvents tramite FindObjectOfType
 /// - Pubblica l'evento quando viene raccolta
 /// - Non conosce GameManager
-/// </summary>
 public class Coin : MonoBehaviour
 {
     [Header("Settings")]
@@ -15,20 +12,13 @@ public class Coin : MonoBehaviour
     [SerializeField] private float _timeBonus = 5f;
     [SerializeField] private bool _isSpecial = false;
 
+    // Riferimento locale a GameEvents (trovato tramite FindObjectOfType)
     private GameEvents _gameEvents;
 
-    // Trova GameEvents la prima volta che serve
-    private GameEvents GetGameEvents()
+    private void Awake()
     {
-        if (_gameEvents == null)
-        {
-            _gameEvents = FindObjectOfType<GameEvents>();
-            if (_gameEvents == null)
-            {
-                Debug.LogError("[COIN] GameEvents not found in scene!");
-            }
-        }
-        return _gameEvents;
+        // Cerchiamo il componente GameEvents nella scena
+        _gameEvents = GameEvents.Instance;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -38,12 +28,10 @@ public class Coin : MonoBehaviour
             Debug.Log($"[COIN DEBUG] _isSpecial value = {_isSpecial}");
             Debug.Log($"[COIN DEBUG] _scoreValue = {_scoreValue}");
             Debug.Log($"[COIN DEBUG] _timeBonus = {_timeBonus}");
-            
-            // ✅ Trova GameEvents e pubblica l'evento
-            GameEvents gameEvents = GetGameEvents();
-            if (gameEvents != null)
+
+            if (_gameEvents != null)
             {
-                gameEvents.PublishCoinCollected(_scoreValue, _timeBonus, _isSpecial);
+                _gameEvents.PublishCoinCollected(_scoreValue, _timeBonus, _isSpecial);
             }
 
             Destroy(gameObject);

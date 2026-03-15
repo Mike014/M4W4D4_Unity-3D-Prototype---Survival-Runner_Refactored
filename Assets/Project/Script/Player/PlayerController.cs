@@ -1,10 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Gestisce il movimento, il salto e le interazioni fisiche del player.
-/// Legge input dalla tastiera, applica movimento relativo alla camera,
-/// gestisce il salto e reagisce alle collisioni con ostacoli e muri.
-/// </summary>
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
@@ -101,12 +96,7 @@ public class PlayerController : MonoBehaviour
         MovePlayer();
         HandleJump();
     }
-
-    /// <summary>
-    /// Applica il movimento al player in base all'input e all'orientamento della camera.
-    /// Il movimento è relativo alla direzione in cui guarda la camera, non al mondo.
-    /// Ignora il movimento se il player è in recoil (paralisi post-collisione).
-    /// </summary>
+    
     void MovePlayer()
     {
         // Se il player è in recoil (dopo aver colpito qualcosa), non può muoversi
@@ -141,11 +131,6 @@ public class PlayerController : MonoBehaviour
         );
     }
 
-    /// <summary>
-    /// Gestisce il salto del player.
-    /// Applica una forza verso l'alto solo se il player è a terra e ha premuto il tasto salto.
-    /// Resetta l'input salto dopo ogni tentativo.
-    /// </summary>
     void HandleJump()
     {
         // Salta solo se:
@@ -162,11 +147,6 @@ public class PlayerController : MonoBehaviour
         _jumpInput = false;
     }
 
-    /// <summary>
-    /// Gestisce le collisioni del player con ostacoli e muri.
-    /// Applica una spinta nella direzione della collisione,
-    /// infligge danno se è un ostacolo, e attiva il recoil (paralisi input).
-    /// </summary>
     private void OnCollisionEnter(Collision collision)
     {
         // Controlla il tag dell'oggetto per identificare il tipo di collisione

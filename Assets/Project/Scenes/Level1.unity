@@ -624,7 +624,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerHealth: {fileID: 101542021}
   _fillImage: {fileID: 1866810959}
-  _healthText: {fileID: 0}
   _animateChanges: 1
   _animationSpeed: 5
 --- !u!1 &202202759
@@ -718,9 +717,21 @@ PrefabInstance:
       propertyPath: m_IsTrigger
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2607224187304731445, guid: 74db5861863714f409e46baaa9bbcf1a, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3219982884233939945, guid: 74db5861863714f409e46baaa9bbcf1a, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 7047493272086336619, guid: 74db5861863714f409e46baaa9bbcf1a, type: 3}
       propertyPath: m_Name
       value: Turret
+      objectReference: {fileID: 0}
+    - target: {fileID: 7047493272086336619, guid: 74db5861863714f409e46baaa9bbcf1a, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7965783510733617647, guid: 74db5861863714f409e46baaa9bbcf1a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1661,9 +1672,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1527510385}
     m_Modifications:
+    - target: {fileID: 2607224187304731445, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3219982884233939945, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 7047493272086336619, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
       propertyPath: m_Name
       value: Turret_7FireRate
+      objectReference: {fileID: 0}
+    - target: {fileID: 7047493272086336619, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7965783510733617647, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2395,9 +2418,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1527510385}
     m_Modifications:
+    - target: {fileID: 2607224187304731445, guid: c61d68e586a020e4593659c6412052c2, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3219982884233939945, guid: c61d68e586a020e4593659c6412052c2, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 7047493272086336619, guid: c61d68e586a020e4593659c6412052c2, type: 3}
       propertyPath: m_Name
       value: Turret_5FireRate
+      objectReference: {fileID: 0}
+    - target: {fileID: 7047493272086336619, guid: c61d68e586a020e4593659c6412052c2, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7965783510733617647, guid: c61d68e586a020e4593659c6412052c2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3672,9 +3707,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1527510385}
     m_Modifications:
+    - target: {fileID: 2607224187304731445, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3219982884233939945, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 7047493272086336619, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
       propertyPath: m_Name
       value: Turret_7FireRate (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7047493272086336619, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7965783510733617647, guid: d85615054d2538a41a6a6dab62d70520, type: 3}
       propertyPath: m_LocalPosition.x

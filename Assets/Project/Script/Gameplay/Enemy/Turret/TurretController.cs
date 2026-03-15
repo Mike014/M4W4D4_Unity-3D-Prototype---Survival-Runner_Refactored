@@ -1,13 +1,10 @@
 using UnityEngine;
-
-/// <summary>
 /// Gestisce il comportamento di una torretta che traccia il player e spara proiettili.
 /// Ruota verso il player quando è nel raggio di rilevamento, mantiene un rateo di fuoco costante,
 /// e visualizza il raggio di attacco nell'editor per debug.
 /// 
 /// REFACTORING: La logica di rotazione, fuoco e calcoli è separata dalle dipendenze
 /// (Transform, Instantiate, FindGameObjectWithTag) per facilitare il testing.
-/// </summary>
 public class TurretController : MonoBehaviour
 {
     [Header("References")]
@@ -87,21 +84,17 @@ public class TurretController : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// Logica pura: Controlla se è tempo di sparare.
     /// Non modifica stato, restituisce solo true/false.
-    /// ✅ TESTABILE: Puoi passare qualsiasi fireCountdown
-    /// </summary>
+    /// TESTABILE: Puoi passare qualsiasi fireCountdown
     private bool CanShootNow(float fireCountdown)
     {
         // Se il countdown è sceso a 0 o sotto, è tempo di sparare
         return fireCountdown <= 0f;
     }
 
-    /// <summary>
     /// Logica pura: Calcola il nuovo countdown per il prossimo sparo.
-    /// ✅ TESTABILE: Pura matematica (1 / fireRate)
-    /// </summary>
+    /// TESTABILE: Pura matematica (1 / fireRate)
     private float ResetFireCountdown(float fireRate)
     {
         // Resetta il timer: 1 / _fireRate = intervallo tra spari
@@ -109,21 +102,17 @@ public class TurretController : MonoBehaviour
         return 1f / fireRate;
     }
 
-    /// <summary>
     /// Calcola il movimento del timer nel tempo.
-    /// ✅ TESTABILE: Pura logica delta-time
-    /// </summary>
+    /// TESTABILE: Pura logica delta-time
     private float UpdateFireCountdown(float currentCountdown, float deltaTime)
     {
         // Decrementa il countdown di un frame
         return currentCountdown - deltaTime;
     }
 
-    /// <summary>
     /// Calcola il quaternione di rotazione desiderato per guardare il player.
     /// Logica pura: non modifica state, non dipende da Transform/Input.
-    /// ✅ TESTABILE: Puoi passare qualsiasi playerPos e turretPos
-    /// </summary>
+    /// TESTABILE: Puoi passare qualsiasi playerPos e turretPos
     private Quaternion CalculateTargetRotation(Vector3 playerPos, Vector3 turretPos, float modelCorrection)
     {
         // CALCOLO DELLA DIREZIONE
@@ -149,11 +138,9 @@ public class TurretController : MonoBehaviour
         return correctedTarget;
     }
 
-    /// <summary>
     /// Calcola la rotazione del turret verso il player e la applica.
     /// Delega il calcolo a CalculateTargetRotation() (testabile)
     /// e applica il risultato con Lerp (smooth).
-    /// </summary>
     void TrackPlayer()
     {
         // STEP 1: CALCOLA LA ROTAZIONE DESIDERATA (Logica pura)
@@ -177,10 +164,8 @@ public class TurretController : MonoBehaviour
         );
     }
 
-    /// <summary>
     /// Istanzia un proiettile al firePoint e lo orienta verso il player.
     /// La rotazione del proiettile viene forzata per garantire che voli dritto.
-    /// </summary>
     void Shoot()
     {
         // VALIDAZIONE: Controlla che tutti i riferimenti necessari esistono
@@ -218,10 +203,8 @@ public class TurretController : MonoBehaviour
     // SISTEMA DI RILEVAMENTO (Trigger Collider)
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /// <summary>
     /// Viene invocato quando un collider entra nel trigger della torretta.
     /// Se è il player, abilita la modalità "combattimento" della torretta.
-    /// </summary>
     void OnTriggerEnter(Collider other)
     {
         // Controlla se l'oggetto che entra ha il tag "Player"
@@ -232,10 +215,8 @@ public class TurretController : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// Viene invocato quando un collider esce dal trigger della torretta.
     /// Se è il player, disabilita la modalità "combattimento" della torretta.
-    /// </summary>
     void OnTriggerExit(Collider other)
     {
         // Controlla se l'oggetto che esce ha il tag "Player"
@@ -250,11 +231,9 @@ public class TurretController : MonoBehaviour
     // DEBUG VISIVO (Solo in Editor)
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /// <summary>
     /// Disegna il raggio di rilevamento della torretta come sfera di Gizmo.
     /// Visibile solo quando il GameObject è selezionato nell'editor.
     /// Utile per debuggare e visualizzare il raggio di attacco.
-    /// </summary>
     void OnDrawGizmosSelected()
     {
         // Colore del gizmo (rosso = zona di attacco)

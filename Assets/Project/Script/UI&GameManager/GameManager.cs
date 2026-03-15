@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float _timeRemaining = 120f;
 
     [Header("Level Settings")]
-    [SerializeField] private Door _exitDoor;
+    // [SerializeField] private Door _exitDoor;
     public int RequiredCoins = 5;
 
     // ════════════════════════════════════════════════════════════════
@@ -181,7 +181,9 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         Debug.Log("Ritorno al menu principale...");
-        SceneManager.LoadScene(0);
+        // SceneManager.LoadScene(0);
+        SceneManager.LoadScene("MainMenu");
+
     }
 
     private void RestartGame()
@@ -192,14 +194,15 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         Debug.Log("Riavvio della partita...");
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        // SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene("Level1");
     }
 
-    private void UnlockDoor()
-    {
-        if (_exitDoor != null)
-        {
-            _exitDoor.Open();
-        }
-    }
+    // private void UnlockDoor()
+    // {
+    //     if (_exitDoor != null)
+    //     {
+    //         _exitDoor.Open();
+    //     }
+    // }
 }

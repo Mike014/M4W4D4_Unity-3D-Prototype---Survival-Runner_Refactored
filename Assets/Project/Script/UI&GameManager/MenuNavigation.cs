@@ -2,11 +2,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement; // Necessario per gestire il caricamento delle scene
 using UnityEngine.UI; // Necessario per accedere ai componenti Button
 
-/// <summary>
 /// Gestisce la navigazione del menu principale del gioco.
 /// Fornisce funzioni per avviare il gioco ed uscire dall'applicazione.
 /// I bottoni vengono assegnati tramite Inspector e vengono collegati automaticamente in Start().
-/// </summary>
 public class MenuNavigation : MonoBehaviour
 {
     [Header("UI References")]
@@ -15,10 +13,8 @@ public class MenuNavigation : MonoBehaviour
     // Riferimento al bottone "Exit Game"
     [SerializeField] private Button _exitGameButton;
 
-    /// <summary>
     /// Inizializza i bottoni collegando i loro onClick events ai rispettivi metodi.
     /// Viene eseguito all'avvio della scena.
-    /// </summary>
     void Start()
     {
         // VALIDAZIONE: Controlla che i bottoni siano stati assegnati
@@ -42,7 +38,6 @@ public class MenuNavigation : MonoBehaviour
         Debug.Log("Menu Navigation inizializzato correttamente!");
     }
 
-    /// <summary>
     /// Avvia il gioco caricando la scena principale.
     /// Viene invocato quando il giocatore clicca il bottone "New Game" nel menu.
     /// La scena del gioco deve essere aggiunta nelle Build Settings (File > Build Settings) con indice 1.
@@ -50,7 +45,6 @@ public class MenuNavigation : MonoBehaviour
     /// SETUP RICHIESTO:
     /// - Build Settings Scene 0: Menu principale (questa scena)
     /// - Build Settings Scene 1: Scena del gioco principale
-    /// </summary>
     public void StartGame()
     {
         // DEBUG: Conferma nella console che il bottone è stato cliccato
@@ -67,7 +61,6 @@ public class MenuNavigation : MonoBehaviour
         // Questo è più leggibile e non dipende dall'ordine nelle Build Settings
     }
 
-    /// <summary>
     /// Esce dall'applicazione.
     /// Viene invocato quando il giocatore clicca il bottone "Exit Game" nel menu.
     /// 
@@ -75,7 +68,6 @@ public class MenuNavigation : MonoBehaviour
     /// - Application.Quit() funziona SOLO nella build finale del gioco
     /// - NON funziona quando esegui il gioco dall'editor di Unity
     /// - Per testare se funziona, devi fare una build standalone (File > Build and Run)
-    /// </summary>
     public void ExitGame()
     {
         // DEBUG LOG
@@ -98,10 +90,8 @@ public class MenuNavigation : MonoBehaviour
         #endif
     }
 
-    /// <summary>
     /// Pulizia: rimuove i listener quando il menu viene distrutto.
     /// Importante per evitare memory leaks se il menu viene ricaricato.
-    /// </summary>
     void OnDestroy()
     {
         // UNSUBSCRIBE DAGLI EVENTI

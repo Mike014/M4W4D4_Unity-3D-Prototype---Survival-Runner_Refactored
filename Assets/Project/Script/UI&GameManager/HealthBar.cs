@@ -29,6 +29,10 @@ public class HealthBar : MonoBehaviour
     private void Update()
     {
         if (!_animateChanges || _fillImage == null) return;
+        if (Mathf.Approximately(_fillImage.fillAmount, _targetFillAmount)) return;
+        /*
+        Quando fillAmount ha raggiunto _targetFillAmount, esce subito senza assegnare nulla _> Unity non ridisegna la UI.
+        */
 
         _fillImage.fillAmount = Mathf.MoveTowards(_fillImage.fillAmount, _targetFillAmount, _animationSpeed * Time.deltaTime);
     }
